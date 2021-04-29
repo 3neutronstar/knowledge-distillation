@@ -99,7 +99,7 @@ def data_loader(configs):
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
     urllib.request.install_opener(opener)
     train_data, test_data = load_dataset(configs)
-    if configs['mode']=='train' or configs['mode']=='test' or configs['mode']=='train_kd':
+    if configs['mode']=='train' or configs['mode']=='test' or 'kd' in configs['mode']:
         train_data_loader, test_data_loader=base_data_loader(train_data, test_data,configs)
 
     return train_data_loader, test_data_loader

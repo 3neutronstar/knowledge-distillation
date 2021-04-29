@@ -46,9 +46,11 @@ def parse_args(args):
         parser.add_argument('--pretrained_model',type=str,default='vgg16',help='set pretrained_model')
         parser.add_argument('--temperature',type=float,default=1.0,help='default:softmax')
         kd=True
+    else:
+        kd=False
     model = parser.parse_known_args(args)[0].model.lower()
     from Model.baseNet import get_hyperparams
-    dataset,epochs,lr,momentum=get_hyperparams(model)
+    dataset,epochs,lr,momentum=get_hyperparams(model,kd)
 
     parser.add_argument(
         '--lr', type=float, default=lr,

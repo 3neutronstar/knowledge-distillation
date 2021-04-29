@@ -1,11 +1,5 @@
 import torch
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
 from torch.utils.tensorboard import SummaryWriter
-from six.moves import urllib
 from data_load import data_loader
 import time
 import os
@@ -32,9 +26,6 @@ class BaseLearner():
 
         self.device = self.configs['device']
         # data
-        opener = urllib.request.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-        urllib.request.install_opener(opener)
         self.train_loader, self.test_loader = data_loader(self.configs)
 
         self.logWriter = SummaryWriter(os.path.join(
@@ -45,28 +36,6 @@ class BaseLearner():
 class ClassicLearner(BaseLearner):
     def __init__(self, model, time_data,file_path, configs):
         super(ClassicLearner,self).__init__(model,time_data,file_path,configs)
-
-        # pruning
-        if configs['mode']=='train_weight_prune':
-            self.grad_off_mask = list()
-            self.grad_norm_cum = dict()
-            for l, num_nodes in enumerate(self.model.node_size_list):
-                for n in range(num_nodes):
-                    self.grad_norm_cum['{}l_{}n'.format(l, n)] = 0.0
-                self.grad_off_mask.append(torch.zeros(
-                    num_nodes, dtype=torch.bool, device=self.device))  # grad=0으로 끄는 mask
-            # gradient 꺼지는 빈도확인
-            self.grad_off_freq_cum = 0
-            # 꺼지는 시기
-            self.grad_turn_off_epoch = self.configs['grad_off_epoch']
-            # # 다시 켤 노드 지정
-            self.grad_turn_on_dict=None
-            # self.grad_turn_on_dict = {
-            #     2: [0, 31, 58, 68, 73]
-            #     # 3:[2,12,27,31,50,82]
-            # }
-            print(self.grad_turn_on_dict)
-
 
     def run(self):
         print("Training {} epochs".format(self.configs['epochs']))
