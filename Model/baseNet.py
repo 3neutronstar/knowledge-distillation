@@ -80,6 +80,9 @@ class BaseNet():
             if configs['pretrained_model']=='vgg16':
                 from torchvision.models import vgg16
                 pretrained_model=vgg16(pretrained=False)
+            if configs['pretrained_model']=='vgg16bn':
+                from torchvision.models import vgg16_bn
+                pretrained_model=vgg16_bn(pretrained=False)
             if configs['pretrained_model']=='resnet18':
                 from torchvision.models import resnet18
                 pretrained_model=resnet18(pretrained=False)
