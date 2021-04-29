@@ -15,7 +15,7 @@ class VGG(nn.Module):
     def __init__(self, config):
         super(VGG, self).__init__()
         final_out=config['num_classes']
-        self.features = self._make_layers(cfg[config['nn_type']])
+        self.features = self._make_layers(cfg[config['model']])
         self.classifier = nn.Sequential(nn.Linear(7*7*512, 4096),
                                         nn.ReLU(inplace=True),
                                         nn.Linear(4096, 4096),
@@ -29,17 +29,9 @@ class VGG(nn.Module):
                                 150, 225], gamma=0.1)
 
         #basic config
-        self.w_size_list = list()
-        self.b_size_list = list()
-        self.kernel_size_list = list()
-        self.NN_size_list = list()
-        self.NN_type_list = list()
-        self.node_size_list=list()
         self.input_channels=3
 
-        self.NN_size_list.append(self.input_channels)  # 3개 채널 color
-
-        vgg_name=config['nn_type']
+        vgg_name=config['model']
 
     def forward(self, x):
         out = self.features(x)

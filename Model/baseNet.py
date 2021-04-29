@@ -35,7 +35,7 @@ def get_hyperparams(nn_type,KD_MODE=False):
         raise NotImplementedError
     
     if KD_MODE==True:
-        dataset='imagenet'
+        dataset='cifar10'
     
 
     return dataset,epochs,lr,momentum
@@ -51,6 +51,7 @@ class BaseNet():
             configs['num_classes']=100
         else:#imagenet
             configs['num_classes']=1000
+            print("Whyme")
         
         if configs['model'] == 'lenet5':
             from Model.lenet5 import LeNet5
@@ -88,5 +89,5 @@ class BaseNet():
                 pretrained_model=resnet18(pretrained=False)
 
             import torch
-            pretrained_model.load_state_dict(torch.load('./pretrained_data/{}_{}.pth'.format(configs['model'],configs['dataset'])))
-            self.pretrained_model=pretrained_model
+            pretrained_model.load_state_dict(torch.load('./pretrained_data/{}_{}.pth'.format(configs['pretrained_model'],configs['dataset'])))
+            self.pretrained_model=pretrained_model.to(configs['device'])

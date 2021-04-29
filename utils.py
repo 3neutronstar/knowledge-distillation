@@ -43,7 +43,7 @@ class EarlyStopping:
         self.early_stop = False
         self.val_loss_min = np.Inf
         self.delta = delta
-        self.path = os.path.join(file_path,'training_data','checkpoint_{}.pt'.format(time_data))
+        self.path = os.path.join(file_path,'training_data','{}_{}.pt'.format(self.config['model'],self.config['dataset']))
 
     def __call__(self, val_loss, model):
 

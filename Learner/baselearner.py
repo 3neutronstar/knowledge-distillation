@@ -73,13 +73,11 @@ class ClassicLearner(BaseLearner):
         # defalut is mean of mini-batchsamples, loss type설정
         # loss함수에 softmax 함수가 포함되어있음
         # 몇개씩(batch size) 로더에서 가져올지 정함 #enumerate로 batch_idx표현
-        p_groups=self.optimizer.param_groups
         for batch_idx, (data, target) in enumerate(self.train_loader):
             data, target = data.to(self.device), target.to(
                 self.device)  # gpu로 올림
             self.optimizer.zero_grad()  # optimizer zero로 초기화
             # weight prune #TODO
-            self.prune_weight(p_groups,epoch,batch_idx)
             # model에서 입력과 출력이 나옴 batch 수만큼 들어가서 batch수만큼 결과가 나옴 (1개 인풋 1개 아웃풋 아님)
             output = self.model(data)
             loss = self.criterion(output, target)  # 결과와 target을 비교하여 계산
@@ -87,14 +85,6 @@ class ClassicLearner(BaseLearner):
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
             loss.backward(retain_graph=True)  # 역전파
-            p_groups = self.optimizer.param_groups  # group에 각 layer별 파라미터
-            # show grad
-            #self._show_grad(output, target,p_groups,epoch,batch_idx)
-            # grad prune
-            self._prune_grad(p_groups, epoch, batch_idx)
-            # grad save(prune후 save)
-            self._save_grad(p_groups, epoch, batch_idx)
-            # prune 이후 optimizer step
             self.optimizer.step()
 
             running_loss += loss.item()

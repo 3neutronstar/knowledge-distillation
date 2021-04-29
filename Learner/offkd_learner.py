@@ -127,10 +127,8 @@ class OFFKDLearner(BaseLearner):
 
         return eval_accuracy, eval_loss
 
-    def kd_loss(self,output,soft_target):
-        q=F.softmax(output/self.temperature)
-        p=F.softmax(soft_target/self.temperature)
-
-        kd_loss=F.cross_entropy(q,p)/(self.temperature**2)
+    def kd_loss(self,output,target):
+        kd_loss=F.kl_div(F.log_softmax(output/self.temperature,dim=1),
+                        F.softmax(target/self.temperature,dim=1),reduction='batchmean')*self.temperature*self.temperature
 
         return kd_loss
