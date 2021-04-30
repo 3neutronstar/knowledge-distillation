@@ -24,13 +24,13 @@ class LeNet5(nn.Module):
         # self.scheduler=optim.lr_scheduler.StepLR(self.optim,step_size=15,gamma=0.1)
         self.scheduler=optim.lr_scheduler.ExponentialLR(self.optim,gamma=0.98)
     def forward(self, x):
-        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv1(x),inplace=True)
         x = self.subsampling(x)
-        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv2(x),inplace=True)
         x = self.subsampling(x)
-        x = F.relu(self.conv3(x))
+        x = F.relu(self.conv3(x),inplace=True)
         x = x.view(-1, 120)
-        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc1(x),inplace=True)
         # print(self.fc1.weight.size())
         # print(torch.nonzero(self.fc1.weight).size(),'weight')
         x = self.fc2(x)
@@ -38,13 +38,13 @@ class LeNet5(nn.Module):
         return x
     
     def extract_feature(self,x):
-        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv1(x),inplace=True)
         x = self.subsampling(x)
-        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv2(x),inplace=True)
         x = self.subsampling(x)
-        feature = F.relu(self.conv3(x))
+        feature = F.relu(self.conv3(x),inplace=True)
         x = feature.view(-1, 120)
-        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc1(x),inplace=True)
         x = self.fc2(x)
         x = self.log_softmax(x)
         return x,feature

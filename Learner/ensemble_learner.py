@@ -9,9 +9,13 @@ class EnsembleLearner(BaseLearner):
         super(EnsembleLearner,self).__init__(models,time_data,file_path,configs)
         # model = list of models
         # criterion
-        self.optimizer = self.model[0].optim
-        self.criterion = self.model[0].loss
-        self.scheduler = self.model[0].scheduler
+        self.optimizer=list()
+        self.scheduler=list()
+        self.criterion=list()
+        for m in self.model:
+            self.optimizer.append( m.optim)
+            self.scheduler.append( m.scheduler)
+            self.criterion.append(m.loss)
         self.kd_criterion=ENSEMBLEKD[configs['kd_type']]()
         self.classification_loss=list()
         self.model_output=list()
@@ -29,7 +33,8 @@ class EnsembleLearner(BaseLearner):
         for epoch in range(self.configs['start_epoch'], self.configs['epochs'] + 1):
             train_accuracy, train_loss = self._train(epoch)
             eval_accuracy, eval_loss = self._eval()
-            self.scheduler.step()
+            for scheduler in self.scheduler:
+                scheduler.step()
             loss_dict = {'train': train_loss, 'eval': eval_loss}
             accuracy_dict = {'train': train_accuracy, 'eval': eval_accuracy}
             self.logWriter.add_scalars('loss', loss_dict, epoch)
@@ -48,38 +53,36 @@ class EnsembleLearner(BaseLearner):
 
     def _train(self, epoch):
         tik = time.time()
-        self.model.train()  # train모드로 설정
+        for m in self.model:
+            m.train()  # train모드로 설정
         running_loss = 0.0
         correct = 0
         num_training_data = len(self.train_loader.dataset)
-        model_loss_list=list()
+        torch.autograd.set_detect_anomaly(True)
         
         for batch_idx, (data, target) in enumerate(self.train_loader):
             data, target = data.to(self.device), target.to(
                 self.device)  # gpu로 올림
-            self.optimizer.zero_grad()
 
-            for model in self.model:
-                output=model(data)
-                classification_loss = self.criterion(output, target)
+            for m,criterion in zip(self.model,self.criterion):
+                output=m(data)
+                classification_loss = criterion(output, target)
                 self.classification_loss.append(classification_loss)
                 self.model_output.append(output)
+                pred = output.argmax(dim=1, keepdim=True)
+                correct += pred.eq(target.view_as(pred)).sum().item()
             
-            for idx,c_l in enumerate(self.classification_loss):
+            for idx,(optim,c_l) in enumerate(zip(self.optimizer,self.classification_loss)):
+                optim.zero_grad()
                 model_loss=c_l+self.kd_criterion(idx,self.model_output)
-                model_loss_list.append(model_loss)
-            loss=torch.cat(model_loss_list,dim=0)
-            
-            pred = output.argmax(dim=1, keepdim=True)
-            correct += pred.eq(target.view_as(pred)).sum().item()
-            loss.backward(retain_graph=True)  # 역전파
-            self.optimizer.step()
+                model_loss.backward()  # 역전파
+                optim.step()
+                running_loss += model_loss.item()
 
-            running_loss += loss.item()
             if batch_idx % self.log_interval == 0:
                 print('\r Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(
-                    data), num_training_data, 100.0 * batch_idx / len(self.train_loader), loss.item()), end='')
-
+                    data), num_training_data, 100.0 * batch_idx / len(self.train_loader), model_loss.item()), end='')
+        correct/=float(len(self.model))
         running_loss /= num_training_data
         tok = time.time()
         running_accuracy = 100.0 * correct / float(num_training_data)
@@ -88,19 +91,21 @@ class EnsembleLearner(BaseLearner):
         return running_accuracy, running_loss
 
     def _eval(self):
-        self.model.eval()
+        for m in self.model:
+            m.eval()
         eval_loss = 0
         correct = 0
         with torch.no_grad():
             for data, target in self.test_loader:
                 data, target = data.to(self.device), target.to(self.device)
-                output = self.model(data)
-                loss = self.criterion(output, target)
-                eval_loss += loss.item()
+                for m in self.model:
+                    output = m(data)
+                    loss = self.criterion(output, target)
+                    eval_loss += loss.item()
                 # get the index of the max log-probability
                 pred = output.argmax(dim=1, keepdim=True)
                 correct += pred.eq(target.view_as(pred)).sum().item()
-
+        correct/=float(len(self.model))
         eval_loss = eval_loss / len(self.test_loader.dataset)
 
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
