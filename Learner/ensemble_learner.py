@@ -73,9 +73,11 @@ class EnsembleLearner(BaseLearner):
                 correct += pred.eq(target.view_as(pred)).sum().item()
             
             for idx,(optim,c_l) in enumerate(zip(self.optimizer,self.classification_loss)):
+                model_loss=None
                 optim.zero_grad()
+                print(idx)
                 model_loss=c_l+self.kd_criterion(idx,self.model_output)
-                model_loss.backward()  # 역전파
+                model_loss.backward(retain_graph=True)  # 역전파
                 optim.step()
                 running_loss += model_loss.item()
 
