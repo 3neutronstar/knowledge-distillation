@@ -14,8 +14,9 @@ Knowledge Distillation
 
 
 ### Performance
+- Temperature: 2.0
 |Type|Teacher|Student|Best Eval Accuracy(%)|
 |:---:|:---:|---:|---:|
 |Baseline|None|ConvNet|56.22|
-|SoftTarget(KL)|VGG16|ConvNet|**61.21**|
-|SoftTarget(MSE)|VGG16|ConvNet|**----**|
+|SoftTarget(KL)|ResNet20|ConvNet|**61.21**|
+|DeepMutualLearning|ConvNet|ConvNet|**--**|

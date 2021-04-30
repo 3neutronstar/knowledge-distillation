@@ -2,16 +2,19 @@ from Learner.baselearner import BaseLearner
 import torch
 import time
 import os
-from KnowledgeDistillation.baseKD import OFFKD, ONKD
+from KnowledgeDistillation.baseKD import ENSEMBLEKD
 
-class OFFKDLearner(BaseLearner):
-    def __init__(self, model,pretrained_model, time_data,file_path, configs):
-        super(OFFKDLearner,self).__init__(model,time_data,file_path,configs)
-        self.optimizer = self.model.optim
-        self.criterion = self.model.loss
-        self.scheduler = self.model.scheduler
-        self.pretrained_model=pretrained_model
-        self.kd_criterion=OFFKD[configs['kd_type']](configs['temperature'])
+class EnsembleLearner(BaseLearner):
+    def __init__(self, models, time_data,file_path, configs):
+        super(EnsembleLearner,self).__init__(models,time_data,file_path,configs)
+        # model = list of models
+        # criterion
+        self.optimizer = self.model[0].optim
+        self.criterion = self.model[0].loss
+        self.scheduler = self.model[0].scheduler
+        self.kd_criterion=ENSEMBLEKD[configs['kd_type']]()
+        self.classification_loss=list()
+        self.model_output=list()
 
         if os.path.exists(os.path.join(file_path,'training_data',time_data,'distilled_data')) == False:
             os.mkdir(os.path.join(file_path,'training_data',time_data,'distilled_data'))
@@ -46,33 +49,30 @@ class OFFKDLearner(BaseLearner):
     def _train(self, epoch):
         tik = time.time()
         self.model.train()  # train모드로 설정
-        self.pretrained_model.eval()
-
         running_loss = 0.0
         correct = 0
         num_training_data = len(self.train_loader.dataset)
-
+        model_loss_list=list()
+        
         for batch_idx, (data, target) in enumerate(self.train_loader):
             data, target = data.to(self.device), target.to(
                 self.device)  # gpu로 올림
-            self.optimizer.zero_grad()  # optimizer zero로 초기화
+            self.optimizer.zero_grad()
 
-            output = self.model(data)
-            with torch.no_grad():
-                cumbersome_output= self.pretrained_model(data)
-
-            hard_loss = self.criterion(output, target)  # 결과와 target을 비교하여 계산
-
-            soft_loss=self.kd_criterion(output,cumbersome_output)#KD
-            loss=hard_loss+soft_loss
-
-
-            # get the index of the max log-probability
+            for model in self.model:
+                output=model(data)
+                classification_loss = self.criterion(output, target)
+                self.classification_loss.append(classification_loss)
+                self.model_output.append(output)
+            
+            for idx,c_l in enumerate(self.classification_loss):
+                model_loss=c_l+self.kd_criterion(idx,self.model_output)
+                model_loss_list.append(model_loss)
+            loss=torch.cat(model_loss_list,dim=0)
+            
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
             loss.backward(retain_graph=True)  # 역전파
-
-            # prune 이후 optimizer step
             self.optimizer.step()
 
             running_loss += loss.item()

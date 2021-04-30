@@ -36,6 +36,7 @@ def get_hyperparams(nn_type,KD_MODE=False):
     
     if KD_MODE==True:
         dataset='cifar10'
+
     
 
     return dataset,epochs,lr,momentum
@@ -77,7 +78,7 @@ class BaseNet():
             raise NotImplementedError
         self.model=model
 
-        if 'kd' in configs['mode']:
+        if 'offkd' in configs['mode'] or 'onkd' in configs['mode']:
             import copy
             KDCONFIGS=copy.deepcopy(configs)
             KDCONFIGS['model']=configs['pretrained_model']
@@ -106,5 +107,6 @@ class BaseNet():
             
 
             import torch
-            pretrained_model.load_state_dict(torch.load('./pretrained_data/{}_{}.pth'.format(configs['pretrained_model'],configs['dataset'])))
-            self.pretrained_model=pretrained_model.to(configs['device'])
+            if 'offkd' in configs['mode']:
+                pretrained_model.load_state_dict(torch.load('./pretrained_data/{}_{}.pth'.format(configs['pretrained_model'],configs['dataset'])))
+                self.pretrained_model=pretrained_model.to(configs['device'])

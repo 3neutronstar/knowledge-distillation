@@ -7,11 +7,7 @@ from utils import EarlyStopping
 class BaseLearner():
     def __init__(self,model,time_data,file_path,configs):
         self.model = model
-        self.optimizer = self.model.optim
-        self.criterion = self.model.loss
-        self.scheduler = self.model.scheduler
         self.configs = configs
-        self.grad_list = list()
         if configs['batch_size']==128 or configs['batch_size']==64:
             self.log_interval=50
         elif configs ['batch_size']<=32:
@@ -36,6 +32,9 @@ class BaseLearner():
 class ClassicLearner(BaseLearner):
     def __init__(self, model, time_data,file_path, configs):
         super(ClassicLearner,self).__init__(model,time_data,file_path,configs)
+        self.optimizer = self.model.optim
+        self.criterion = self.model.loss
+        self.scheduler = self.model.scheduler
 
     def run(self):
         print("Training {} epochs".format(self.configs['epochs']))

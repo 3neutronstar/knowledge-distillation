@@ -42,9 +42,19 @@ def parse_args(args):
 
 
     #TRAIN OPTION BY NN
-    if 'kd' in parser.parse_known_args(args)[0].mode.lower():
-        parser.add_argument('--pretrained_model',type=str,default='vgg16',help='set pretrained_model')
-        parser.add_argument('--temperature',type=float,default=1.0,help='default:softmax')
+    mode=parser.parse_known_args(args)[0].mode.lower()
+    if 'kd' in mode:
+        if 'offkd' in mode:
+            parser.add_argument('--pretrained_model',type=str,default='vgg16',help='set pretrained_model')
+            parser.add_argument('--temperature',type=float,default=1.0,help='default:softmax')
+            parser.add_argument('--kd_type',type=str,default='softtarget',help='default:softtarget')
+        elif 'onkd' in mode:
+            parser.add_argument('--kd_type',type=str,default='softtarget',help='default:softtarget')
+        elif 'ensemblekd' in mode:
+            parser.add_argument('--kd_type',type=str,default='dml',help='default:dml')
+            parser.add_argument('--num_model',type=int,default=2,help='default:2')
+        else:
+            raise NotImplementedError
         kd=True
     else:
         kd=False
@@ -76,12 +86,14 @@ def parse_args(args):
     parser.add_argument(
         '--patience', type=int, default=10,
         help='set mini-batch size')
+
+        
     return parser.parse_known_args(args)[0]
 
 
 def main(args):
     flags = parse_args(args)
-    TRAIN_MODE=['train','train_offkd']
+    TRAIN_MODE=['train','train_offkd','train_ensemblekd','train_onkd']
     train_mode_list=TRAIN_MODE
 
     if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)),'training_data')) == False:
@@ -112,21 +124,9 @@ def main(args):
     '''
     Basic Setting
     '''
-    configs = {'device': str(device),
-               'seed': random_seed,
-               'epochs': flags.epochs,
-               'start_epoch':flags.start_epoch,
-               'lr': flags.lr,
-               'batch_size': flags.batch_size,
-               'dataset': flags.dataset.lower(),
-               'model': flags.model.lower(),
-               'colab': flags.colab,
-               'num_workers': flags.num_workers,
-               'mode':flags.mode,
-               'momentum':flags.momentum,
-               'earlystop':flags.earlystop,
-               'patience':flags.patience,
-               }
+    configs=vars(flags)
+    configs ['device']=str(device)
+
     if configs['mode'] in train_mode_list:
         save_params(configs, time_data)
         print("Using device: {}, Mode:{}, Type:{}".format(device,flags.mode,flags.model))
@@ -151,12 +151,19 @@ def main(args):
         learner=ClassicLearner(model,time_data,file_path,configs)
         learner.run()
     elif flags.mode=='train_offkd':
-        configs=dict(configs ,**{'pretrained_model':flags.pretrained_model,'temperature':flags.temperature})
+        configs=dict(configs ,**{'pretrained_model':flags.pretrained_model,'temperature':flags.temperature,'kd_type':flags.kd_type})
         base_model=BaseNet(configs)
         model=base_model.model
         pretrained_model=base_model.pretrained_model
         from Learner.offkd_learner import OFFKDLearner
         learner=OFFKDLearner(model,pretrained_model,time_data,file_path,configs)
+        learner.run()
+    elif flags.mode=='train_ensemblekd':
+        model=list()
+        for _ in range(configs['num_model']):
+            model.append(BaseNet(configs).model)
+        from Learner.ensemble_learner import EnsembleLearner
+        learner=EnsembleLearner(model,time_data,file_path,configs)
         learner.run()
     
     print("End the process")
