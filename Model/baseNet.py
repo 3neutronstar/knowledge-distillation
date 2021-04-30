@@ -78,15 +78,29 @@ class BaseNet():
         self.model=model
 
         if 'kd' in configs['mode']:
-            if configs['pretrained_model']=='vgg16':
-                from torchvision.models import vgg16
-                pretrained_model=vgg16(pretrained=False)
-            if configs['pretrained_model']=='vgg16bn':
-                from torchvision.models import vgg16_bn
-                pretrained_model=vgg16_bn(pretrained=False)
-            if configs['pretrained_model']=='resnet18':
-                from torchvision.models import resnet18
-                pretrained_model=resnet18(pretrained=False)
+            if configs['pretrained_model'] == 'lenet5':
+                from Model.lenet5 import LeNet5
+                pretrained_model = LeNet5(configs).to(configs['device'])
+            elif configs['pretrained_model'][:3] == 'vgg':
+                from Model.vgg import VGG
+                pretrained_model = VGG(configs).to(configs['device'])
+                # print(pretrained_model)
+            elif configs['pretrained_model']=='lenet300_100':
+                from Model.lenet300_100 import LeNet_300_100
+                pretrained_model = LeNet_300_100(configs).to(configs['device'])
+            elif configs['pretrained_model'][:6]=='resnet':
+                from Model.resnet import ResNet
+                pretrained_model = ResNet(configs).to(configs['device'])
+            elif configs['pretrained_model']=='convnet':
+                from Model.convnet import ConvNet
+                pretrained_model = ConvNet(configs).to(configs['device'])
+            elif configs['pretrained_model']=='alexnet':
+                from Model.alexnet import AlexNet
+                pretrained_model = AlexNet(configs).to(configs['device'])
+            else:
+                print("No Model")
+                raise NotImplementedError
+            
 
             import torch
             pretrained_model.load_state_dict(torch.load('./pretrained_data/{}_{}.pth'.format(configs['pretrained_model'],configs['dataset'])))
