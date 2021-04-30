@@ -78,25 +78,28 @@ class BaseNet():
         self.model=model
 
         if 'kd' in configs['mode']:
+            import copy
+            KDCONFIGS=copy.deepcopy(configs)
+            KDCONFIGS['model']=configs['pretrained_model']
             if configs['pretrained_model'] == 'lenet5':
                 from Model.lenet5 import LeNet5
-                pretrained_model = LeNet5(configs).to(configs['device'])
+                pretrained_model = LeNet5(KDCONFIGS).to(configs['device'])
             elif configs['pretrained_model'][:3] == 'vgg':
                 from Model.vgg import VGG
-                pretrained_model = VGG(configs).to(configs['device'])
+                pretrained_model = VGG(KDCONFIGS).to(configs['device'])
                 # print(pretrained_model)
             elif configs['pretrained_model']=='lenet300_100':
                 from Model.lenet300_100 import LeNet_300_100
-                pretrained_model = LeNet_300_100(configs).to(configs['device'])
+                pretrained_model = LeNet_300_100(KDCONFIGS).to(configs['device'])
             elif configs['pretrained_model'][:6]=='resnet':
                 from Model.resnet import ResNet
-                pretrained_model = ResNet(configs).to(configs['device'])
+                pretrained_model = ResNet(KDCONFIGS).to(configs['device'])
             elif configs['pretrained_model']=='convnet':
                 from Model.convnet import ConvNet
-                pretrained_model = ConvNet(configs).to(configs['device'])
+                pretrained_model = ConvNet(KDCONFIGS).to(configs['device'])
             elif configs['pretrained_model']=='alexnet':
                 from Model.alexnet import AlexNet
-                pretrained_model = AlexNet(configs).to(configs['device'])
+                pretrained_model = AlexNet(KDCONFIGS).to(configs['device'])
             else:
                 print("No Model")
                 raise NotImplementedError

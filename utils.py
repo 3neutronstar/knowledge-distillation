@@ -43,7 +43,10 @@ class EarlyStopping:
         self.early_stop = False
         self.val_loss_min = np.Inf
         self.delta = delta
-        self.path = os.path.join(file_path,'training_data','{}_{}.pt'.format(self.config['model'],self.config['dataset']))
+        if self.config['mode']=='train':
+            self.path= os.path.join(file_path,'training_data','{}_{}.pt'.format(self.config['model'],self.config['dataset']))
+        elif 'kd' in self.config['mode']:
+            self.path = os.path.join(file_path,time_data,'distilled_data','{}_{}.pt'.format(self.config['model'],self.config['dataset']))
 
     def __call__(self, val_loss, model):
 

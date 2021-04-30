@@ -6,7 +6,7 @@ class OFFKDLearner(BaseLearner):
     def __init__(self, model,pretrained_model, time_data,file_path, configs):
         super(OFFKDLearner,self).__init__(model,time_data,file_path,configs)
         self.pretrained_model=pretrained_model
-        self.temperature=configs['temperature']
+        self.T=configs['temperature']
 
         # pruning
         if configs['mode']=='train_weight_prune':
@@ -127,8 +127,11 @@ class OFFKDLearner(BaseLearner):
 
         return eval_accuracy, eval_loss
 
-    def kd_loss(self,output,target):
-        kd_loss=F.kl_div(F.log_softmax(output/self.temperature,dim=1),
-                        F.softmax(target/self.temperature,dim=1),reduction='batchmean')*self.temperature*self.temperature
+    def kd_loss(self,output,target): # KL ensembles
+        kd_loss=F.kl_div(F.log_softmax(output/self.T,dim=1),
+                        F.softmax(target/self.T,dim=1),reduction='batchmean')*self.T*self.T
 
         return kd_loss
+
+    def kd_loss(self,output,target):
+        kd_loss=F.mse_loss(F.softmax(output/self.T,dim=1),F.softmax(target/self.T,dim=1))*self.T*self.T
