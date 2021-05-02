@@ -159,11 +159,11 @@ def main(args):
         learner=OFFKDLearner(model,pretrained_model,time_data,file_path,configs)
         learner.run()
     elif flags.mode=='train_ensemblekd':
-        model=list()
+        model_list=list()
         for _ in range(configs['num_model']):
-            model.append(BaseNet(configs).model)
+            model_list.append(BaseNet(configs).model)
         from Learner.ensemble_learner import EnsembleLearner
-        learner=EnsembleLearner(model,time_data,file_path,configs)
+        learner=EnsembleLearner(model_list,time_data,file_path,configs)
         learner.run()
     
     print("End the process")
