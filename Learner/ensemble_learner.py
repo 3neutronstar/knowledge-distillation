@@ -59,8 +59,9 @@ class EnsembleLearner(BaseLearner):
         correct = 0
         num_training_data = len(self.train_loader.dataset)
         torch.autograd.set_detect_anomaly(True)
-        
         for batch_idx, (data, target) in enumerate(self.train_loader):
+            self.model_output=list()
+            self.classification_loss=list()
             data, target = data.to(self.device), target.to(
                 self.device)  # gpu로 올림
 
@@ -98,9 +99,9 @@ class EnsembleLearner(BaseLearner):
         with torch.no_grad():
             for data, target in self.test_loader:
                 data, target = data.to(self.device), target.to(self.device)
-                for m in self.model:
+                for m,criterion in zip(self.model,self.criterion):
                     output = m(data)
-                    loss = self.criterion(output, target)
+                    loss = criterion(output, target)
                     eval_loss += loss.item()
                 # get the index of the max log-probability
                 pred = output.argmax(dim=1, keepdim=True)

@@ -74,5 +74,11 @@ class EarlyStopping:
         if self.verbose:
             print(
                 f'Eval loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
-        torch.save(model.state_dict(), self.path)
+        if type(model)==list:
+            print("Saving Ensemble")
+            torch.save(model[0].state_dict(), self.path+'0')
+            torch.save(model[0].state_dict(), self.path+'1')
+            
+        else:
+            torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
