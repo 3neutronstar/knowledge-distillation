@@ -75,7 +75,7 @@ class EnsembleLearner(BaseLearner):
             
             for idx,(optim,c_l) in enumerate(zip(self.optimizer,self.classification_loss)):
                 optim.zero_grad()
-                model_loss=c_l#+self.kd_criterion(idx,self.model_output)
+                model_loss=c_l+self.kd_criterion(idx,self.model_output)
                 c_l.backward(retain_graph=True)  # 역전파
                 optim.step()
                 running_loss += model_loss.item()
@@ -103,9 +103,9 @@ class EnsembleLearner(BaseLearner):
                     output = m(data)
                     loss = criterion(output, target)
                     eval_loss += loss.item()
-                # get the index of the max log-probability
-                pred = output.argmax(dim=1, keepdim=True)
-                correct += pred.eq(target.view_as(pred)).sum().item()
+                    # get the index of the max log-probability
+                    pred = output.argmax(dim=1, keepdim=True)
+                    correct += pred.eq(target.view_as(pred)).sum().item()
         correct/=float(len(self.model))
         eval_loss = eval_loss / len(self.test_loader.dataset)
 

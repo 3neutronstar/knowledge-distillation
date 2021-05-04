@@ -17,7 +17,7 @@ class LeNet5(nn.Module):
         self.fc1 = nn.Linear(120, 84)
         self.fc2 = nn.Linear(84, config['num_classes'])
         
-        self.log_softmax = nn.LogSoftmax(dim=-1)
+        #self.log_softmax = nn.LogSoftmax(dim=-1)
         self.optim = optim.SGD(params=self.parameters(),
                                momentum=config['momentum'], lr=config['lr'], nesterov=True, weight_decay=1e-4)
         self.loss=nn.CrossEntropyLoss()
@@ -34,7 +34,7 @@ class LeNet5(nn.Module):
         # print(self.fc1.weight.size())
         # print(torch.nonzero(self.fc1.weight).size(),'weight')
         x = self.fc2(x)
-        x = self.log_softmax(x)
+        #x = self.log_softmax(x)
         return x
     
     def extract_feature(self,x):
@@ -46,5 +46,5 @@ class LeNet5(nn.Module):
         x = feature.view(-1, 120)
         x = F.relu(self.fc1(x),inplace=True)
         x = self.fc2(x)
-        x = self.log_softmax(x)
+        #x = self.log_softmax(x)
         return x,feature
