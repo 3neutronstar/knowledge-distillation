@@ -1,10 +1,17 @@
 from torchvision import datasets
 import torchvision.transforms as transforms
 import torch
+import sys
 
 
 from six.moves import urllib
 def load_dataset(configs):
+    if sys.platform == 'linux':
+        data_save_path='dataset'
+    elif sys.platform =='win32':
+        data_save_path='\dataset'
+    else:
+        data_save_path='./dataset'
     if configs['dataset'] == 'mnist':
         transform = transforms.Compose(
             [transforms.Resize((32, 32)), transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
