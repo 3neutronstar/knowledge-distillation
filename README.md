@@ -15,6 +15,7 @@ Knowledge Distillation
 
 ### Performance
 - Cifar100, (Temperature: 2.0 in SoftTarget)
+
 |Type|Teacher|Student|Best Eval Accuracy(%)|
 |:---:|:---:|---:|---:|
 |Baseline|None|ConvNet|56.31|
@@ -22,12 +23,13 @@ Knowledge Distillation
 |DeepMutualLearning|None|ConvNet|**56.52**|
 
 - Cifar10, (Temperature: 2.0 in SoftTarget)
+
 |Type|Teacher|Student|Best Eval Accuracy(%)|
 |:---:|:---:|---:|---:|
 |Baseline|None|ConvNet|83.52|
-|Baseline|None|ResNet|91.92|
+|Baseline|None|ResNet20|91.92|
 |DeepMutualLearning|None|ConvNet|83.30|
-|DeepMutualLearning|None|ResNet|83.30|
+|DeepMutualLearning|None|ResNet20|90.86|
 +
 - MNIST
 |Type|Teacher|Student|Best Eval Accuracy(%)|
