@@ -30,8 +30,9 @@ Knowledge Distillation
 |Baseline|None|ResNet20|91.92|
 |DeepMutualLearning|None|ConvNet|83.30|
 |DeepMutualLearning|None|ResNet20|90.86|
-+
+
 - MNIST
+
 |Type|Teacher|Student|Best Eval Accuracy(%)|
 |:---:|:---:|---:|---:|
 |Baseline|None|LeNet5|91.13|
