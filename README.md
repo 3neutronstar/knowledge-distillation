@@ -39,9 +39,11 @@ Knowledge Distillation
 |DeepMutualLearning|None|ConvNet|83.30|
 |DeepMutualLearning|None|ResNet20|91.14|
 
-- MNIST
+- FASHIONMNIST
 
 |Type|Teacher|Student|Best Eval Accuracy(%)|
 |:---:|:---:|---:|---:|
-|Baseline|None|LeNet5|91.13|
+|Baseline|None|LeNet5|90.49|
 |DeepMutualLearning|None|LeNet5|91.14|
+|CS-KD|None|LeNet5|91.45|
+
