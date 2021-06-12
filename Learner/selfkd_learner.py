@@ -54,7 +54,7 @@ class SelfKDLearner(ClassicLearner):
             inputs, targets = inputs.to(self.device), targets.to(self.device)
 
             batch_size = inputs.size(0)
-            if not self.KDCustomLoss:
+            if not self.KDCustomLoss: # baseline
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, targets)
                 train_loss += loss.item()
@@ -74,15 +74,15 @@ class SelfKDLearner(ClassicLearner):
                     cls_loss = self.kdloss(outputs, outputs_cls.detach())
                     loss += self.configs['lambda'] * cls_loss
                     train_cls_loss += cls_loss.item()
-                else:
+                else: # covariance loss (pearson)
                     targets_=targets
                     outputs=self.model(inputs)
                     loss = self.criterion(outputs, targets_)
                     train_loss += loss.item()
-
-                    cls_loss=self.kdloss(outputs,targets_)
-                    loss += self.configs['lambda'] * cls_loss
-                    train_cls_loss += cls_loss.item()
+                    if epoch>15:
+                        cls_loss=self.kdloss(outputs,targets_)
+                        loss += self.configs['lambda'] * cls_loss
+                        train_cls_loss += cls_loss.item()
 
                 _, predicted = torch.max(outputs, 1)
                 total += targets_.size(0)
