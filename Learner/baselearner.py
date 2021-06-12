@@ -27,6 +27,9 @@ class BaseLearner():
         self.logWriter = SummaryWriter(os.path.join(
             self.current_path, 'training_data', time_data))
 
+        if os.path.exists(os.path.join(file_path,'training_data',time_data,'distilled_data')) == False:
+            os.mkdir(os.path.join(file_path,'training_data',time_data,'distilled_data'))
+
 
 
 class ClassicLearner(BaseLearner):
@@ -35,13 +38,13 @@ class ClassicLearner(BaseLearner):
         self.optimizer = self.model.optim
         self.criterion = self.model.loss
         self.scheduler = self.model.scheduler
+        self.best_eval_accuracy=0.0
 
     def run(self):
         print("Training {} epochs".format(self.configs['epochs']))
 
         eval_accuracy, eval_loss = 0.0, 0.0
         train_accuracy, train_loss = 0.0, 0.0
-        best_eval_accuracy=0.0
         # Train
         for epoch in range(self.configs['start_epoch'], self.configs['epochs'] + 1):
             train_accuracy, train_loss = self._train(epoch)
@@ -59,9 +62,9 @@ class ClassicLearner(BaseLearner):
                 break
             if self.device == 'cuda':
                 torch.cuda.empty_cache()
-            if best_eval_accuracy<eval_accuracy:
-                best_eval_accuracy=eval_accuracy
-        print("Best Accuracy in evaluation: {:.2f}".format(best_eval_accuracy) )
+            if self.best_eval_accuracy<eval_accuracy:
+                self.best_eval_accuracy=eval_accuracy
+        print("Best Accuracy in evaluation: {:.2f}".format(self.best_eval_accuracy) )
 
     def _train(self, epoch):
         tik = time.time()
@@ -69,21 +72,18 @@ class ClassicLearner(BaseLearner):
         running_loss = 0.0
         correct = 0
         num_training_data = len(self.train_loader.dataset)
-        # defalut is mean of mini-batchsamples, loss type설정
-        # loss함수에 softmax 함수가 포함되어있음
-        # 몇개씩(batch size) 로더에서 가져올지 정함 #enumerate로 batch_idx표현
+
         for batch_idx, (data, target) in enumerate(self.train_loader):
             data, target = data.to(self.device), target.to(
-                self.device)  # gpu로 올림
-            self.optimizer.zero_grad()  # optimizer zero로 초기화
-            # weight prune #TODO
-            # model에서 입력과 출력이 나옴 batch 수만큼 들어가서 batch수만큼 결과가 나옴 (1개 인풋 1개 아웃풋 아님)
+                self.device)
+            self.optimizer.zero_grad() 
+
             output = self.model(data)
-            loss = self.criterion(output, target)  # 결과와 target을 비교하여 계산
-            # get the index of the max log-probability
+            loss = self.criterion(output, target)
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
-            loss.backward(retain_graph=True)  # 역전파
+            loss.backward(retain_graph=True)
+
             self.optimizer.step()
 
             running_loss += loss.item()

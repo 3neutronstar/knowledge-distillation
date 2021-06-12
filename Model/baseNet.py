@@ -1,5 +1,5 @@
 
-def get_hyperparams(nn_type,KD_MODE=False):
+def get_hyperparams(nn_type):
     if nn_type == 'lenet5':
         dataset = 'mnist'
         epochs = 60
@@ -32,12 +32,7 @@ def get_hyperparams(nn_type,KD_MODE=False):
         momentum=0.9
     else:
         print("No algorithm available")
-        raise NotImplementedError
-    
-    if KD_MODE==True:
-        dataset='cifar10'
-
-    
+        raise NotImplementedError   
 
     return dataset,epochs,lr,momentum
 

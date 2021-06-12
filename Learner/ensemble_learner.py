@@ -20,9 +20,6 @@ class EnsembleLearner(BaseLearner):
         self.classification_loss=list()
         self.model_output=list()
 
-        if os.path.exists(os.path.join(file_path,'training_data',time_data,'distilled_data')) == False:
-            os.mkdir(os.path.join(file_path,'training_data',time_data,'distilled_data'))
-
     def run(self):
         print("Training {} epochs".format(self.configs['epochs']))
 

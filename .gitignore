@@ -132,3 +132,4 @@ training_data
 data
 pretrained_data/*.pth
 distilled_data/*
+.vscode

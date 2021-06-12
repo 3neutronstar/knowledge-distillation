@@ -13,9 +13,6 @@ class OFFKDLearner(BaseLearner):
         self.pretrained_model=pretrained_model
         self.kd_criterion=OFFKD[configs['kd_type']](configs['temperature'])
 
-        if os.path.exists(os.path.join(file_path,'training_data',time_data,'distilled_data')) == False:
-            os.mkdir(os.path.join(file_path,'training_data',time_data,'distilled_data'))
-
     def run(self):
         print("Training {} epochs".format(self.configs['epochs']))
 

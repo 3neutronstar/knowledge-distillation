@@ -34,7 +34,7 @@ def parse_args(args):
         '--colab', type=bool, default=False,
         help='if you are in colab use it')
     parser.add_argument(
-        '--log', type=bool, default=False,
+        '--log','-l', type=bool, default=False,
         help='saving logs')
     parser.add_argument(
         '--num_workers', type=int, default=3,
@@ -43,24 +43,26 @@ def parse_args(args):
 
     #TRAIN OPTION BY NN
     mode=parser.parse_known_args(args)[0].mode.lower()
-    if 'kd' in mode:
-        if 'offkd' in mode:
-            parser.add_argument('--pretrained_model',type=str,default='vgg16',help='set pretrained_model')
-            parser.add_argument('--temperature',type=float,default=1.0,help='default:softmax')
-            parser.add_argument('--kd_type',type=str,default='softtarget',help='default:softtarget')
-        elif 'onkd' in mode:
-            parser.add_argument('--kd_type',type=str,default='softtarget',help='default:softtarget')
-        elif 'ensemblekd' in mode:
-            parser.add_argument('--kd_type',type=str,default='dml',help='default:dml')
-            parser.add_argument('--num_model',type=int,default=2,help='default:2')
-        else:
-            raise NotImplementedError
-        kd=True
+    if 'offkd' in mode:
+        parser.add_argument('--pretrained_model',type=str,default='vgg16',help='set pretrained_model')
+        parser.add_argument('--temperature',type=float,default=1.0,help='default:softmax')
+        parser.add_argument('--kd_type',type=str,default='softtarget',help='default:softtarget')
+    elif 'onkd' in mode:
+        parser.add_argument('--kd_type',type=str,default='softtarget',help='default:softtarget')
+    elif 'ensemblekd' in mode:
+        parser.add_argument('--kd_type',type=str,default='dml',help='default:dml')
+        parser.add_argument('--num_model',type=int,default=2,help='default:2')
+    elif 'selfkd' in mode:
+        parser.add_argument(
+        '--custom_loss', type=str, default='baseline',
+        help='set custom loss')
+        parser.add_argument('--temperature',type=float,default=4.0,help='default:softmax')
+        parser.add_argument('--lambda',type=float,default=1.0,help='cls loss')
     else:
-        kd=False
+        raise NotImplementedError
     model = parser.parse_known_args(args)[0].model.lower()
     from Model.baseNet import get_hyperparams
-    dataset,epochs,lr,momentum=get_hyperparams(model,kd)
+    dataset,epochs,lr,momentum=get_hyperparams(model)
 
     parser.add_argument(
         '--lr', type=float, default=lr,
@@ -93,7 +95,7 @@ def parse_args(args):
 
 def main(args):
     flags = parse_args(args)
-    TRAIN_MODE=['train','train_offkd','train_ensemblekd','train_onkd']
+    TRAIN_MODE=['train','train_offkd','train_ensemblekd','train_onkd','train_selfkd']
     train_mode_list=TRAIN_MODE
 
     if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)),'training_data')) == False:
@@ -151,7 +153,6 @@ def main(args):
         learner=ClassicLearner(model,time_data,file_path,configs)
         learner.run()
     elif flags.mode=='train_offkd':
-        configs=dict(configs ,**{'pretrained_model':flags.pretrained_model,'temperature':flags.temperature,'kd_type':flags.kd_type})
         base_model=BaseNet(configs)
         model=base_model.model
         pretrained_model=base_model.pretrained_model
@@ -164,6 +165,11 @@ def main(args):
             model_list.append(BaseNet(configs).model)
         from Learner.ensemble_learner import EnsembleLearner
         learner=EnsembleLearner(model_list,time_data,file_path,configs)
+        learner.run()
+    elif flags.mode=='train_selfkd':
+        from Learner.selfkd_learner import SelfKDLearner
+        model=BaseNet(configs).model
+        learner=SelfKDLearner(model,time_data,file_path,configs)
         learner.run()
     
     print("End the process")

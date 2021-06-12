@@ -7,11 +7,15 @@ Knowledge Distillation
     python run.py train --model [model]
 ``` 
 
-- Run Knowledge Self Knowledge Distillation(cs-kd)
+- Run  Self Knowledge Distillation(cs-kd)
 ```shell script
-    python run.py train --model [model] --custom_loss [self-kd name]
+    python run.py train_selfkd --model [model] --custom_loss [self-kd name]
 ``` 
-- Run Knowledge Offline Distillation
+- Run Offline Knowledge Distillation
+```shell script
+    python run.py train_offkd --model [model] --pretrained_model [teacher model]
+``` 
+- Run EnsembleKnowledge Distillation
 ```shell script
     python run.py train_offkd --model [model] --pretrained_model [teacher model]
 ``` 
