@@ -2,22 +2,21 @@ from torchvision import datasets
 import torchvision.transforms as transforms
 import torch
 import sys
-
-
 from six.moves import urllib
+
 def load_dataset(configs):
     if sys.platform == 'linux':
         data_save_path='dataset'
     elif sys.platform =='win32':
         data_save_path='\dataset'
     else:
-        data_save_path='./dataset'
+        data_save_path='dataset'
     if configs['dataset'] == 'mnist':
         transform = transforms.Compose(
             [transforms.Resize((32, 32)), transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
-        train_data = datasets.MNIST(root='\dataset', train=True,
+        train_data = datasets.MNIST(root=data_save_path, train=True,
                                     download=True, transform=transform)
-        test_data = datasets.MNIST(root='\dataset', train=False,
+        test_data = datasets.MNIST(root=data_save_path, train=False,
                                         download=False, transform=transform)
 
     elif configs['dataset'] == 'cifar100':
@@ -34,9 +33,9 @@ def load_dataset(configs):
             transforms.ToTensor(),
             normalize,
         ])
-        train_data = datasets.CIFAR100(root='\dataset', train=True,
+        train_data = datasets.CIFAR100(root=data_save_path, train=True,
                                        download=True, transform=train_transform)
-        test_data = datasets.CIFAR100(root='\dataset', train=False,
+        test_data = datasets.CIFAR100(root=data_save_path, train=False,
                                       download=False, transform=test_transform)
 
     elif configs['dataset'] == 'cifar10':
@@ -54,9 +53,9 @@ def load_dataset(configs):
             normalize,
         ])
         
-        train_data = datasets.CIFAR10(root='\dataset', train=True,
+        train_data = datasets.CIFAR10(root=data_save_path, train=True,
                                       download=True, transform=train_transform)
-        test_data = datasets.CIFAR10(root='\dataset', train=False,
+        test_data = datasets.CIFAR10(root=data_save_path, train=False,
                                      download=False, transform=test_transform)
 
     elif configs['dataset']=='imagenet':
@@ -74,8 +73,8 @@ def load_dataset(configs):
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         }
-        train_data=datasets.ImageNet(root='\dataset',train=True,transform=data_transforms['train'],download=True )
-        test_data=datasets.ImageNet(root='\dataset',train=False,transform=data_transforms['test'],download=False )
+        train_data=datasets.ImageNet(root=data_save_path,train=True,transform=data_transforms['train'],download=True )
+        test_data=datasets.ImageNet(root=data_save_path,train=False,transform=data_transforms['test'],download=False )
 
     return train_data, test_data
 

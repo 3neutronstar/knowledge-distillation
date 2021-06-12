@@ -7,6 +7,7 @@ import logging
 CUSTOM_LOSS={
     'softtarget':OFFKD['softtarget'],
     'baseline':None,
+    'pearson':OURS['ver1'],
 }
 
 def set_logging_defaults(logdir):
@@ -26,7 +27,7 @@ class SelfKDLearner(ClassicLearner):
         super(SelfKDLearner,self).__init__(model,time_data,file_path,configs)
         this_path=os.path.join(file_path,'training_data',time_data)
         set_logging_defaults(this_path)
-        logger = logging.getLogger('main')
+        self.logger = logging.getLogger('main')
         if CUSTOM_LOSS[configs['custom_loss']] is None:
             self.KDCustomLoss=False
         else:
@@ -36,8 +37,8 @@ class SelfKDLearner(ClassicLearner):
 
     def run(self):
         super().run()
-        logger = logging.getLogger('best')
-        logger.info('[Acc {:.3f}]'.format(self.best_eval_accuracy))
+        self.logger = logging.getLogger('best')
+        self.logger.info('[Acc {:.3f}]'.format(self.best_eval_accuracy))
 
 
 
@@ -88,8 +89,8 @@ class SelfKDLearner(ClassicLearner):
         running_accuracy=100.0*float(correct)/float(total)
 
         #logger
-        logger = logging.getLogger('train')
-        logger.info('[Epoch {}] [Loss {:.3f}] [KDCustomLoss {:.3f}] [Acc {:.3f}] [Learning Time:{:.2f}]'.format(epoch,
+        self.logger = logging.getLogger('train')
+        self.logger.info('[Epoch {}] [Loss {:.3f}] [KDCustomLoss {:.3f}] [Acc {:.3f}] [Learning Time:{:.2f}]'.format(epoch,
         train_loss/(batch_idx+1),
         train_cls_loss/(batch_idx+1),
         100.*correct/total,tok-tik))
