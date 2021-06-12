@@ -83,7 +83,7 @@ class SelfKDLearner(ClassicLearner):
             self.optimizer.step()
             if batch_idx % self.log_interval == 0:
                 print('\r Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, total
-                , len(self.train_loader.dataset)//2, 100.0 * total / len(self.train_loader.dataset), train_loss.item()), end='')
+                , len(self.train_loader.dataset)//2, 100.0 * total / len(self.train_loader.dataset), train_loss), end='')
         tok=time.time()
         running_accuracy=100.0*float(correct)/float(total)
 
