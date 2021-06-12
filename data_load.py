@@ -4,7 +4,7 @@ import torch
 import sys
 from six.moves import urllib 
 from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler, Subset
-from utils import PairBatchSampler
+from utils import DatasetWrapper, PairBatchSampler
 def load_dataset(configs):
     if sys.platform == 'linux':
         data_save_path='dataset'
@@ -129,7 +129,8 @@ def pair_data_loader(train_data,test_data,configs):
     elif configs['sample'] == 'pair':
         get_train_sampler = lambda d: PairBatchSampler(d, configs['batch_size'])
         get_test_sampler  = lambda d: BatchSampler(SequentialSampler(d), configs['batch_size'], False)
-
+    train_data=DatasetWrapper(train_data)
+    test_data=DatasetWrapper(test_data)
     train_data_loader = torch.utils.data.DataLoader(train_data,
                                                     batch_sampler=get_train_sampler(train_data),
                                                     pin_memory=pin_memory,
@@ -142,6 +143,7 @@ def pair_data_loader(train_data,test_data,configs):
                                                     )
 
     return train_data_loader, test_data_loader
+    
 def data_loader(configs):
     opener = urllib.request.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
@@ -149,7 +151,7 @@ def data_loader(configs):
     train_data, test_data = load_dataset(configs)
 
 
-    if 'self' in configs['mode']:
+    if configs['mode']=='train_selfkd' and configs['custom_loss']=='cs-kd':
         train_data_loader,test_data_loader=pair_data_loader(train_data,test_data,configs)
     elif configs['mode']=='train' or configs['mode']=='test' or 'kd' in configs['mode']:
         train_data_loader, test_data_loader=base_data_loader(train_data, test_data,configs)

@@ -112,6 +112,8 @@ class PairBatchSampler(Sampler):
             pair_indices = []
             for idx in batch_indices:
                 y = self.dataset.get_class(idx)
+                if isinstance(y,torch.Tensor):
+                    y=y.item()
                 pair_indices.append(random.choice(self.dataset.classwise_indices[y]))
 
             yield batch_indices + pair_indices
@@ -150,6 +152,8 @@ class DatasetWrapper(Dataset):
         self.classwise_indices = defaultdict(list)
         for i in range(len(self)):
             y = self.base_dataset.targets[self.indices[i]]
+            if isinstance(y,torch.Tensor):
+                y=y.item()
             self.classwise_indices[y].append(i)
         self.num_classes = max(self.classwise_indices.keys())+1
 

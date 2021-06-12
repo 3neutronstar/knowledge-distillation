@@ -44,6 +44,6 @@ Knowledge Distillation
 |Type|Teacher|Student|Best Eval Accuracy(%)|
 |:---:|:---:|---:|---:|
 |Baseline|None|LeNet5|90.49|
-|DeepMutualLearning|None|LeNet5|91.14|
+|DeepMutualLearning|None|LeNet5|90.61|
 |CS-KD|None|LeNet5|91.45|
 
