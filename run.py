@@ -58,8 +58,8 @@ def parse_args(args):
         help='set custom loss')
         parser.add_argument('--temperature',type=float,default=4.0,help='default:softmax')
         parser.add_argument('--lambda',type=float,default=1.0,help='cls loss')
-    else:
-        raise NotImplementedError
+        parser.add_argument('--sample',type=str,default='default',help='batch sample type')
+
     model = parser.parse_known_args(args)[0].model.lower()
     from Model.baseNet import get_hyperparams
     dataset,epochs,lr,momentum=get_hyperparams(model)

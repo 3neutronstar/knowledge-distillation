@@ -41,13 +41,12 @@ def get_hyperparams(nn_type):
 class BaseNet():
     def __init__(self,configs):
         
-        if configs['dataset']=='cifar10' or configs['dataset']=='mnist':
+        if configs['dataset'] in ['cifar10','fashionmnist','mnist']:
             configs['num_classes']=10
         elif configs['dataset']=='cifar100':
             configs['num_classes']=100
         else:#imagenet
             configs['num_classes']=1000
-            print("Whyme")
         
         if configs['model'] == 'lenet5':
             from Model.lenet5 import LeNet5

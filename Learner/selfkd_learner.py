@@ -5,7 +5,7 @@ from KnowledgeDistillation.baseKD import *
 import time
 import logging
 CUSTOM_LOSS={
-    'softtarget':OFFKD['softtarget'],
+    'cs-kd':OFFKD['softtarget'],
     'baseline':None,
     'pearson':OURS['ver1'],
 }
@@ -54,26 +54,35 @@ class SelfKDLearner(ClassicLearner):
             inputs, targets = inputs.to(self.device), targets.to(self.device)
 
             batch_size = inputs.size(0)
-
             if not self.KDCustomLoss:
                 outputs = self.model(inputs)
-                loss = torch.mean(self.criterion(outputs, targets))
+                loss = self.criterion(outputs, targets)
                 train_loss += loss.item()
 
                 _, predicted = torch.max(outputs, 1)
                 total += targets.size(0)
                 correct += predicted.eq(targets.data).sum().float().cpu()
             else:
-                targets_ = targets[:batch_size//2]
-                outputs = self.model(inputs[:batch_size//2])
-                loss = torch.mean(self.criterion(outputs, targets_))
-                train_loss += loss.item()
+                if self.configs['custom_loss']=='cs-kd':
+                    targets_ = targets[:batch_size//2].detach().clone()
+                    outputs = self.model(inputs[:batch_size//2])
+                    loss = self.criterion(outputs, targets_)
+                    train_loss += loss.item()
 
-                with torch.no_grad():
-                    outputs_cls = self.model(inputs[batch_size//2:])
-                cls_loss = self.kdloss(outputs, outputs_cls.detach())
-                loss += self.configs['lambda'] * cls_loss
-                train_cls_loss += cls_loss.item()
+                    with torch.no_grad():
+                        outputs_cls = self.model(inputs[batch_size//2:])
+                    cls_loss = self.kdloss(outputs, outputs_cls.detach())
+                    loss += self.configs['lambda'] * cls_loss
+                    train_cls_loss += cls_loss.item()
+                else:
+                    targets_=targets
+                    outputs=self.model(inputs)
+                    loss = self.criterion(outputs, targets_)
+                    train_loss += loss.item()
+
+                    cls_loss=self.kdloss(outputs,targets_)
+                    loss += self.configs['lambda'] * cls_loss
+                    train_cls_loss += cls_loss.item()
 
                 _, predicted = torch.max(outputs, 1)
                 total += targets_.size(0)
@@ -84,7 +93,7 @@ class SelfKDLearner(ClassicLearner):
             self.optimizer.step()
             if batch_idx % self.log_interval == 0:
                 print('\r Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, total
-                , len(self.train_loader.dataset)//2, 100.0 * total / len(self.train_loader.dataset), train_loss/(batch_idx+1)), end='')
+                , len(self.train_loader.dataset), 100.0 * total / len(self.train_loader.dataset), train_loss/(batch_idx+1)), end='')
         tok=time.time()
         running_accuracy=100.0*float(correct)/float(total)
 

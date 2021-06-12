@@ -2,8 +2,9 @@ from torchvision import datasets
 import torchvision.transforms as transforms
 import torch
 import sys
-from six.moves import urllib
-
+from six.moves import urllib 
+from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler, Subset
+from utils import PairBatchSampler
 def load_dataset(configs):
     if sys.platform == 'linux':
         data_save_path='dataset'
@@ -76,6 +77,20 @@ def load_dataset(configs):
         train_data=datasets.ImageNet(root=data_save_path,train=True,transform=data_transforms['train'],download=True )
         test_data=datasets.ImageNet(root=data_save_path,train=False,transform=data_transforms['test'],download=False )
 
+    elif configs['dataset']=='fashionmnist':
+        train_transform=transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,))
+        ])
+        test_transform=transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,))
+        ])
+        train_data=datasets.FashionMNIST(root=data_save_path, download=True, train=True, transform=train_transform)
+        test_data=datasets.FashionMNIST(root=data_save_path, download=False, train=False, transform=test_transform)
+    
     return train_data, test_data
 
 def base_data_loader(train_data,test_data,configs):
@@ -100,12 +115,43 @@ def base_data_loader(train_data,test_data,configs):
     print("Using Datasets: ", configs['dataset'])
     return train_data_loader, test_data_loader
 
+def pair_data_loader(train_data,test_data,configs):
+    if configs['device'] == 'gpu':
+        pin_memory = True
+        # pin_memory=False
+    else:
+        pin_memory = False
+        # Sampler
+    if configs['sample'] == 'default':
+        get_train_sampler = lambda d: BatchSampler(RandomSampler(d), configs['batch_size'], False)
+        get_test_sampler  = lambda d: BatchSampler(SequentialSampler(d), configs['batch_size'], False)
+
+    elif configs['sample'] == 'pair':
+        get_train_sampler = lambda d: PairBatchSampler(d, configs['batch_size'])
+        get_test_sampler  = lambda d: BatchSampler(SequentialSampler(d), configs['batch_size'], False)
+
+    train_data_loader = torch.utils.data.DataLoader(train_data,
+                                                    batch_sampler=get_train_sampler(train_data),
+                                                    pin_memory=pin_memory,
+                                                    num_workers=configs['num_workers'],
+                                                    )
+    test_data_loader = torch.utils.data.DataLoader(test_data,
+                                                    batch_sampler=get_test_sampler(test_data),
+                                                    pin_memory=pin_memory,
+                                                    num_workers=configs['num_workers'],
+                                                    )
+
+    return train_data_loader, test_data_loader
 def data_loader(configs):
     opener = urllib.request.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
     urllib.request.install_opener(opener)
     train_data, test_data = load_dataset(configs)
-    if configs['mode']=='train' or configs['mode']=='test' or 'kd' in configs['mode']:
-        train_data_loader, test_data_loader=base_data_loader(train_data, test_data,configs)
 
+
+    if 'self' in configs['mode']:
+        train_data_loader,test_data_loader=pair_data_loader(train_data,test_data,configs)
+    elif configs['mode']=='train' or configs['mode']=='test' or 'kd' in configs['mode']:
+        train_data_loader, test_data_loader=base_data_loader(train_data, test_data,configs)
+    
     return train_data_loader, test_data_loader
