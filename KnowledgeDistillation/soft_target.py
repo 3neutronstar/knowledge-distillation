@@ -15,7 +15,6 @@ class SoftTarget(nn.Module):
             kd_loss=F.kl_div(F.log_softmax(output/self.T,dim=1),
                             F.softmax(target/self.T,dim=1),reduction='batchmean')*self.T*self.T
         elif self.type_loss=='mse':
-
             kd_loss=F.mse_loss(F.softmax(output/self.T,dim=1),F.softmax(target/self.T,dim=1))
         else:
             raise NotImplementedError

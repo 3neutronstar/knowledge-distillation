@@ -36,6 +36,7 @@ class SelfKDLearner(ClassicLearner):
         self.criterion = self.model.loss
 
     def run(self):
+        self.logger.info(self.configs)
         super().run()
         self.logger = logging.getLogger('best')
         self.logger.info('[Acc {:.3f}]'.format(self.best_eval_accuracy))

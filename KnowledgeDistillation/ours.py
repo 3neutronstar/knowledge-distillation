@@ -38,4 +38,5 @@ class PearsonCorrelationLoss(nn.Module):
             cov_mat = torch.mm(probs,probs.T)
             cov_mat[torch.eye(batch_size,dtype=torch.bool,device='cuda')]=0.0
             loss -= cov_mat.norm(p=1) / batch_size
+        loss/=labels.unique().size()[0]
         return loss
