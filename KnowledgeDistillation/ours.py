@@ -15,7 +15,9 @@ class PearsonCorrelationLoss(nn.Module):
     def _covariance_loss(self, logits, labels):
         loss=0.0
         for label in labels.unique():
-            logits_label=logits[labels==label]
+            logits_label=logits[labels==label].clone()
+            if logits_label.size()[0]==1: # batch_size
+                continue
             labels_label=labels[labels==label].clone()
             batch_size, n_cats= logits_label.size()
             # removing the ground truth prob
@@ -37,6 +39,6 @@ class PearsonCorrelationLoss(nn.Module):
             #probs = probs / torch.sqrt(((all_probs ** 2).sum(dim=1, keepdim=True) + 1e-8))
             cov_mat = torch.mm(probs,probs.T)
             cov_mat[torch.eye(batch_size,dtype=torch.bool,device='cuda')]=0.0
-            loss += cov_mat.norm(p=1) / batch_size
-        loss/=labels.unique().size()[0]
+            loss += cov_mat.norm(p=1)
+        loss/=labels.size()[0]
         return loss
