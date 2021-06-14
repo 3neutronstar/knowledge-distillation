@@ -80,7 +80,7 @@ class SelfKDLearner(ClassicLearner):
                     outputs=self.model(inputs)
                     loss = self.criterion(outputs, targets_)
                     train_loss += loss.item()
-                    if epoch>self.configs['epochs']/4.0:
+                    if epoch>self.configs['epochs']*self.configs['start_epoch_rate']:
                         cls_loss=self.kdloss(outputs,targets_)
                         loss += self.configs['lambda'] * cls_loss
                         train_cls_loss += cls_loss.item()
