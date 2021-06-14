@@ -91,7 +91,7 @@ class ClassicLearner(BaseLearner):
                 print('\r Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(
                     data), num_training_data, 100.0 * batch_idx / len(self.train_loader), loss.item()), end='')
 
-        running_loss /= num_training_data
+        running_loss /= (batch_idx+1)
         tok = time.time()
         running_accuracy = 100.0 * correct / float(num_training_data)
         print('\nTrain Loss: {:.6f}'.format(running_loss), 'Learning Time: {:.1f}s'.format(
@@ -103,7 +103,7 @@ class ClassicLearner(BaseLearner):
         eval_loss = 0
         correct = 0
         with torch.no_grad():
-            for data, target in self.test_loader:
+            for batch_idx,(data, target) in self.test_loader:
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 loss = self.criterion(output, target)
@@ -112,7 +112,7 @@ class ClassicLearner(BaseLearner):
                 pred = output.argmax(dim=1, keepdim=True)
                 correct += pred.eq(target.view_as(pred)).sum().item()
 
-        eval_loss = eval_loss / len(self.test_loader.dataset)
+        eval_loss = eval_loss / self.configs['batch_size']
 
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
             eval_loss, correct, len(self.test_loader.dataset),

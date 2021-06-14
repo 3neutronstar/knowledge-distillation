@@ -75,7 +75,7 @@ class OFFKDLearner(BaseLearner):
             running_loss += loss.item()
             if batch_idx % self.log_interval == 0:
                 print('\r Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(
-                    data), num_training_data, 100.0 * batch_idx / len(self.train_loader), loss.item()), end='')
+                    data), num_training_data, 100.0 * batch_idx / len(self.train_loader), loss.item()/(batch_idx+1)), end='')
 
         running_loss /= num_training_data
         tok = time.time()
@@ -89,7 +89,7 @@ class OFFKDLearner(BaseLearner):
         eval_loss = 0
         correct = 0
         with torch.no_grad():
-            for data, target in self.test_loader:
+            for batch_idx,(data, target) in enumerate(self.test_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 loss = self.criterion(output, target)
@@ -98,7 +98,7 @@ class OFFKDLearner(BaseLearner):
                 pred = output.argmax(dim=1, keepdim=True)
                 correct += pred.eq(target.view_as(pred)).sum().item()
 
-        eval_loss = eval_loss / len(self.test_loader.dataset)
+        eval_loss = eval_loss / (batch_idx+1)
 
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
             eval_loss, correct, len(self.test_loader.dataset),
