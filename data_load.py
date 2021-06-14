@@ -7,11 +7,11 @@ from torch.utils.data import BatchSampler, SequentialSampler, RandomSampler, Sub
 from utils import DatasetWrapper, PairBatchSampler
 def load_dataset(configs):
     if sys.platform == 'linux':
-        data_save_path='dataset'
+        data_save_path='/data/dataset'
     elif sys.platform =='win32':
-        data_save_path='\dataset'
+        data_save_path='\data\datset'
     else:
-        data_save_path='dataset'
+        data_save_path='/data/dataset'
     if configs['dataset'] == 'mnist':
         transform = transforms.Compose(
             [transforms.Resize((32, 32)), transforms.ToTensor(),transforms.Normalize((0.1307,), (0.3081,))])
