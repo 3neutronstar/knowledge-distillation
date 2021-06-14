@@ -103,7 +103,7 @@ class ClassicLearner(BaseLearner):
         eval_loss = 0
         correct = 0
         with torch.no_grad():
-            for batch_idx,(data, target) in self.test_loader:
+            for batch_idx,(data, target) in enumerate(self.test_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 loss = self.criterion(output, target)
