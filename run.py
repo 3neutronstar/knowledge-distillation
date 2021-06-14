@@ -61,7 +61,7 @@ def parse_args(args):
         if parser.parse_known_args(args)[0].custom_loss=='cs-kd':
             parser.add_argument('--sample',type=str,default='pair',help='batch sample type')
         elif parser.parse_known_args(args)[0].custom_loss=='pearson':
-            parser.add_argument('--start_epoch_rate',-'ser',type=float,default=0.5,help='custom_loss start point')
+            parser.add_argument('--start_epoch_rate','-ser',type=float,default=0.5,help='custom_loss start point')
 
 
     model = parser.parse_known_args(args)[0].model.lower()
