@@ -13,7 +13,7 @@ class LeNet_300_100(nn.Module):
         self.fc2 = nn.Linear(300, 100, bias=True)
         self.fc3 = nn.Linear(100, configs['num_classes'], bias=True)
 
-        self.optim=optim.SGD(params=self.parameters(),momentum=self.configs['momentum'],lr=self.configs['lr'],nesterov=True)
+        self.optim=optim.SGD(params=self.parameters(),momentum=self.configs['momentum'],lr=self.configs['lr'],nesterov=configs['nesterov'],weight_decay=configs['weight_decay'])
         self.scheduler=optim.lr_scheduler.StepLR(self.optim,step_size=15,gamma=0.1)
         self.loss=nn.CrossEntropyLoss()
 

@@ -12,10 +12,10 @@ cfg = {
 
 
 class VGG(nn.Module):
-    def __init__(self, config):
+    def __init__(self, configs):
         super(VGG, self).__init__()
-        final_out=config['num_classes']
-        self.features = self._make_layers(cfg[config['model']])
+        final_out=configs['num_classes']
+        self.features = self._make_layers(cfg[configs['model']])
         self.classifier = nn.Sequential(nn.Linear(7*7*512, 4096),
                                         nn.ReLU(inplace=True),
                                         nn.Linear(4096, 4096),
@@ -23,15 +23,15 @@ class VGG(nn.Module):
                                         nn.Linear(4096, final_out),
                                         )
         self.optim = optim.SGD(params=self.parameters(),
-                               momentum=0.9, lr=config['lr'], nesterov=True)
+                               momentum=configs['momentum'], lr=configs['lr'], nesterov=configs['nesterov'],weight_decay=configs['weight_decay'])
         self.loss=nn.CrossEntropyLoss()
         self.scheduler = optim.lr_scheduler.MultiStepLR(optimizer=self.optim, milestones=[
                                 150, 225], gamma=0.1)
 
-        #basic config
+        #basic configs
         self.input_channels=3
 
-        vgg_name=config['model']
+        vgg_name=configs['model']
 
     def forward(self, x):
         out = self.features(x)

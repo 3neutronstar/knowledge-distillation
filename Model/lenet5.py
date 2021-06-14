@@ -5,7 +5,7 @@ import random
 import torch
 
 class LeNet5(nn.Module):
-    def __init__(self, config):
+    def __init__(self, configs):
         super(LeNet5, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=6,
                                kernel_size=(5, 5))  # 5x5+1 params
@@ -15,11 +15,11 @@ class LeNet5(nn.Module):
         self.conv3 = nn.Conv2d(
             in_channels=16, out_channels=120, kernel_size=(5, 5))  # 5x5+1 params
         self.fc1 = nn.Linear(120, 84)
-        self.fc2 = nn.Linear(84, config['num_classes'])
+        self.fc2 = nn.Linear(84, configs['num_classes'])
         
         #self.log_softmax = nn.LogSoftmax(dim=-1)
         self.optim = optim.SGD(params=self.parameters(),
-                               momentum=config['momentum'], lr=config['lr'], nesterov=True, weight_decay=1e-4)
+                               momentum=configs['momentum'], lr=configs['lr'], nesterov=configs['nesterov'], weight_decay=configs['weight_decay'])
         self.loss=nn.CrossEntropyLoss()
         # self.scheduler=optim.lr_scheduler.StepLR(self.optim,step_size=15,gamma=0.1)
         self.scheduler=optim.lr_scheduler.ExponentialLR(self.optim,gamma=0.98)

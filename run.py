@@ -58,7 +58,8 @@ def parse_args(args):
         help='set custom loss')
         parser.add_argument('--temperature',type=float,default=4.0,help='default:softmax')
         parser.add_argument('--lambda',type=float,default=1.0,help='cls loss')
-        parser.add_argument('--sample',type=str,default='pair',help='batch sample type')
+        if parser.parse_known_args(args)[0].custom_loss=='cs-kd':
+            parser.add_argument('--sample',type=str,default='pair',help='batch sample type')
 
     model = parser.parse_known_args(args)[0].model.lower()
     from Model.baseNet import get_hyperparams
@@ -70,6 +71,12 @@ def parse_args(args):
     parser.add_argument(
         '--momentum', type=float, default=momentum,
         help='set learning rate')
+    parser.add_argument(
+        '--nesterov', type=bool, default=False,
+        help='set optimizer nesterov momentum')
+    parser.add_argument(
+        '--weight_decay', type=float, default=1e-4,
+        help='set optimizer\'s weight decay')
     parser.add_argument(
         '--epochs', type=int, default=epochs,
         help='run epochs')
