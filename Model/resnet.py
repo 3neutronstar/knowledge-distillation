@@ -128,7 +128,8 @@ class ResNet(nn.Module):
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.residual_layer(out)
-        out = F.avg_pool2d(out, out.size()[3])
+        # out = F.avg_pool2d(out, out.size()[3]) # original
+        out=F.adaptive_avg_pool2d(out,(1,1))
         out = out.view(out.size(0), -1)
         out = self.classifier(out)
         return out
