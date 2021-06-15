@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.modules.linear import Linear
 import torch.optim as optim
 import random
 import torch
@@ -12,9 +13,13 @@ class LeNet5(nn.Module):
         self.subsampling = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
         self.conv2 = nn.Conv2d(
             in_channels=6, out_channels=16, kernel_size=(5, 5))  # 5x5+1 params
-        self.fc1 = nn.Linear(400, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, configs['num_classes'])
+        self.classifier=nn.Sequential(
+            nn.Linear(400,120),
+            nn.ReLU(),
+            nn.Linear(120,84),
+            nn.ReLU(),
+            nn.Linear(84,configs['num_classes']),
+        )
         
         self.optim = optim.SGD(params=self.parameters(),
                                momentum=configs['momentum'], lr=configs['lr'], nesterov=configs['nesterov'], weight_decay=configs['weight_decay'])
@@ -34,11 +39,7 @@ class LeNet5(nn.Module):
         x = F.relu(self.conv2(x))
         x = self.subsampling(x)
         x = x.view(-1, 400)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        # print(self.fc1.weight.size())
-        # print(torch.nonzero(self.fc1.weight).size(),'weight')
+        x = self.classifier(x)
         return x
     
     def extract_feature(self,x):
@@ -47,9 +48,7 @@ class LeNet5(nn.Module):
         x = F.relu(self.conv2(x))
         feature = self.subsampling(x)
         x = feature.view(-1, 400)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x=self.classifier(x)
         return x, feature
 
     def get_configs(self):

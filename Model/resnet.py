@@ -97,7 +97,7 @@ class ResNet(nn.Module):
             stride_list=[1,2,2]
         self.device=configs['device']        
         block=type_dict[resnet_type][2]
-        self.linear = nn.Linear(plane_list[-1]*block.expansion, num_classes)
+        self.classifier = nn.Linear(plane_list[-1]*block.expansion, num_classes)
         residual=list()
         for planes,num_blocks,strides in zip(plane_list,type_dict[resnet_type][0],stride_list):
             residual.append(self._make_layer(type_dict[resnet_type][2],planes,num_blocks,strides))
@@ -130,5 +130,5 @@ class ResNet(nn.Module):
         out = self.residual_layer(out)
         out = F.avg_pool2d(out, out.size()[3])
         out = out.view(out.size(0), -1)
-        out = self.linear(out)
+        out = self.classifier(out)
         return out

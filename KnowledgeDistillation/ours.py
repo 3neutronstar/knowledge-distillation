@@ -38,8 +38,8 @@ class PearsonCorrelationLoss(nn.Module):
             ####
             #probs = probs / torch.sqrt(((all_probs ** 2).sum(dim=1, keepdim=True) + 1e-8))
             cov_mat = torch.mm(probs,probs.T)
-            cut_idx=1 - torch.eye(batch_size,dtype=torch.float,device='cuda')
-            cov_mat=cov_mat*cut_idx
-            loss += cov_mat.norm(p=1)
+            cut_idx= ~torch.eye(batch_size,dtype=torch.bool,device='cuda')
+            cov_mat=cov_mat[cut_idx]
+            loss += cov_mat.norm()
         loss/=labels.size()[0]
         return loss

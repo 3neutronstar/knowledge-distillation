@@ -4,6 +4,7 @@ from Learner.baselearner import BaseLearner, ClassicLearner
 from KnowledgeDistillation.baseKD import *
 import time
 import logging
+import torch.nn as nn
 CUSTOM_LOSS={
     'cs-kd':OFFKD['softtarget'],
     'baseline':None,
@@ -42,7 +43,6 @@ class SelfKDLearner(ClassicLearner):
         self.logger.info('[Acc {:.3f}]'.format(self.best_eval_accuracy))
 
 
-
     def _train(self,epoch):
         tik = time.time()
         self.model.train()  # train모드로 설정
@@ -53,8 +53,10 @@ class SelfKDLearner(ClassicLearner):
         correct = 0
         for batch_idx, (inputs, targets) in enumerate(self.train_loader):
             inputs, targets = inputs.to(self.device), targets.to(self.device)
+            self.optimizer.zero_grad()
 
             batch_size = inputs.size(0)
+
             if not self.KDCustomLoss: # baseline
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, targets)
@@ -82,14 +84,21 @@ class SelfKDLearner(ClassicLearner):
                     train_loss += loss.item()
                     if epoch>self.configs['epochs']*self.configs['start_epoch_rate']:
                         cls_loss=self.kdloss(outputs,targets_)
-                        loss += self.configs['lambda'] * cls_loss
+                        for param in self.model.parameters():
+                            param.requires_grad = False
+                        for p in self.model.classifier.parameters():
+                            p.requires_grad =True
+                        cls_loss.backward(retain_graph=True)
+                        for param in self.model.parameters():
+                            param.requires_grad = True
+                                                
+                        loss += self.configs['lambda'] * cls_loss.detach()
                         train_cls_loss += cls_loss.item()
 
                 _, predicted = torch.max(outputs, 1)
                 total += targets_.size(0)
                 correct += predicted.eq(targets_.data).sum().float().cpu()
 
-            self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
             if batch_idx % self.log_interval == 0:
