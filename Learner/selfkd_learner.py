@@ -9,6 +9,7 @@ CUSTOM_LOSS={
     'cs-kd':OFFKD['softtarget'],
     'baseline':None,
     'pearson':OURS['ver1'],
+    'kldiv':OURS['ver2'],
 }
 
 def set_logging_defaults(logdir):
@@ -113,5 +114,5 @@ class SelfKDLearner(ClassicLearner):
         train_loss/(batch_idx+1),
         train_cls_loss/(batch_idx+1),
         100.*correct/total,tok-tik))
-
+        self.logWriter.add_scalar('loss/cls_loss',cls_loss,epoch)
         return running_accuracy, train_loss

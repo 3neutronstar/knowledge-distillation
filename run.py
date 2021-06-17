@@ -60,7 +60,7 @@ def parse_args(args):
         parser.add_argument('--lambda',type=float,default=1.0,help='cls loss')
         if parser.parse_known_args(args)[0].custom_loss=='cs-kd':
             parser.add_argument('--sample',type=str,default='pair',help='batch sample type')
-        elif parser.parse_known_args(args)[0].custom_loss=='pearson':
+        elif parser.parse_known_args(args)[0].custom_loss in ['pearson','kldiv']:
             parser.add_argument('--start_epoch_rate','-ser',type=float,default=0.5,help='custom_loss start point')
 
 
