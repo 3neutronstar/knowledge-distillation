@@ -114,5 +114,5 @@ class SelfKDLearner(ClassicLearner):
         train_loss/(batch_idx+1),
         train_cls_loss/(batch_idx+1),
         100.*correct/total,tok-tik))
-        self.logWriter.add_scalar('loss/cls_loss',cls_loss,epoch)
+        self.logWriter.add_scalar('loss/cls_loss',train_cls_loss,epoch)
         return running_accuracy, train_loss
