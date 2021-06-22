@@ -95,10 +95,9 @@ def parse_args(args):
     parser.add_argument(
         '--earlystop', type=bool, default=False,
         help='earlystopping')
-    if parser.parse_known_args(args)[0].earlystop==True:
-        parser.add_argument(
-            '--patience', type=int, default=10,
-            help='set mini-batch size')
+    parser.add_argument(
+        '--patience', type=int, default=10,
+        help='set mini-batch size')
 
         
     return parser.parse_known_args(args)[0]

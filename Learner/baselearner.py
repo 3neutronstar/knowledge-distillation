@@ -16,7 +16,6 @@ class BaseLearner():
             print("Use Default log interval")
             self.log_interval=100
         self.current_path = file_path
-
         self.early_stopping = EarlyStopping(
             self.current_path, time_data, configs, patience=self.configs['patience'], verbose=True)
 
