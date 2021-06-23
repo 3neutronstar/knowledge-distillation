@@ -77,7 +77,7 @@ class OFFKDLearner(BaseLearner):
                 print('\r Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(
                     data), num_training_data, 100.0 * batch_idx / len(self.train_loader), loss.item()/(batch_idx+1)), end='')
 
-        running_loss /= num_training_data
+        running_loss /= (batch_idx+1)
         tok = time.time()
         running_accuracy = 100.0 * correct / float(num_training_data)
         print('\nTrain Loss: {:.6f}'.format(running_loss), 'Learning Time: {:.1f}s'.format(

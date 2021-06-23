@@ -78,7 +78,7 @@ class SelfKDLearner(ClassicLearner):
                     cls_loss = self.kdloss(outputs, outputs_cls.detach())
                     loss += self.configs['lambda'] * cls_loss
                     train_cls_loss += cls_loss.item()
-                else: # covariance loss (pearson)
+                else: # covariance loss (pearson,kl_div)
                     targets_=targets
                     outputs=self.model(inputs)
                     loss = self.criterion(outputs, targets_)
@@ -107,11 +107,11 @@ class SelfKDLearner(ClassicLearner):
                 , len(self.train_loader.dataset), 100.0 * total / len(self.train_loader.dataset), train_loss/(batch_idx+1)), end='')
         tok=time.time()
         running_accuracy=100.0*float(correct)/float(total)
-
+        train_loss/=(batch_idx+1)
         #logger
         self.logger = logging.getLogger('train')
         self.logger.info('[Epoch {}] [Loss {:.3f}] [KDCustomLoss {:.3f}] [Acc {:.3f}] [Learning Time:{:.2f}]'.format(epoch,
-        train_loss/(batch_idx+1),
+        train_loss,
         train_cls_loss/(batch_idx+1),
         100.*correct/total,tok-tik))
         self.logWriter.add_scalar('loss/cls_loss',train_cls_loss,epoch)
